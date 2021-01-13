@@ -32,6 +32,7 @@
 #include <signal.h>
 #include <locale.h>
 #include <libgen.h>
+#include <time.h>
 
 #include "blktrace.h"
 #include "rbtree.h"
@@ -2888,6 +2889,7 @@ static void show_stats(void)
 
 	if (per_device_and_cpu_stats)
 		show_device_and_cpu_stats();
+	fprintf(ofp, "Trace started at %s\n", ctime(&abs_start_time.tv_sec));
 
 	fflush(ofp);
 }
