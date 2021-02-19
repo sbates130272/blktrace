@@ -307,7 +307,7 @@ static pthread_mutex_t dp_mutex = PTHREAD_MUTEX_INITIALIZER;
 static volatile int dp_entries;
 
 /*
- * These synchronize master / thread interactions.
+ * These synchronize main / thread interactions.
  */
 static pthread_cond_t mt_cond = PTHREAD_COND_INITIALIZER;
 static pthread_mutex_t mt_mutex = PTHREAD_MUTEX_INITIALIZER;

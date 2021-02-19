@@ -276,12 +276,12 @@ static void print_field(char *act, struct per_cpu_info *pci,
 static char *parse_field(char *act, struct per_cpu_info *pci,
 			 struct blk_io_trace *t, unsigned long long elapsed,
 			 int pdu_len, unsigned char *pdu_buf,
-			 char *master_format)
+			 char *primary_format)
 {
 	int minus = 0;
 	int has_w = 0;
 	int width = 0;
-	char *p = master_format;
+	char *p = primary_format;
 
 	if (*p == '-') {
 		minus = 1;
