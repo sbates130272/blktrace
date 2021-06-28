@@ -2705,8 +2705,10 @@ static int run_tracers(void)
 			printf("blktrace: connected!\n");
 		if (stop_watch)
 			alarm(stop_watch);
-	} else
+	} else {
 		stop_tracers();
+		done = 1;
+	}
 
 	wait_tracers();
 	if (nthreads_running == ncpus)
