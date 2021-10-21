@@ -2229,6 +2229,10 @@ static int check_cpu_map(struct per_dev_info *pdi)
 	unsigned int i;
 	int ret, cpu;
 
+	/* Pipe input doesn't do CPU online tracking. */
+	if (!pdi->cpu_map_max)
+		return 0;
+
 	/*
 	 * create a map of the cpus we have traces for
 	 */
