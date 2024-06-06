@@ -2684,8 +2684,10 @@ static int run_tracers(void)
 	if (net_mode == Net_client)
 		printf("blktrace: connecting to %s\n", hostname);
 
-	if (setup_buts())
+	if (setup_buts()) {
+		done = 1;
 		return 1;
+	}
 
 	if (use_tracer_devpaths()) {
 		if (setup_tracer_devpaths())
