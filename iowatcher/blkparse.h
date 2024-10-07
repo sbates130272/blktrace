@@ -57,6 +57,7 @@ struct trace {
 	int mpstat_fd;
 	int mpstat_seconds;
 	int mpstat_num_cpus;
+	u64 ios_in_flight;
 
 	char *fio_start;
 	char *fio_cur;

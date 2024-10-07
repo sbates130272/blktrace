@@ -41,7 +41,6 @@
 #define IO_HASH_TABLE_BITS  11
 #define IO_HASH_TABLE_SIZE (1 << IO_HASH_TABLE_BITS)
 static struct list_head io_hash_table[IO_HASH_TABLE_SIZE];
-static u64 ios_in_flight = 0;
 
 #define PROCESS_HASH_TABLE_BITS 7
 #define PROCESS_HASH_TABLE_SIZE (1 << PROCESS_HASH_TABLE_BITS)
@@ -1037,8 +1036,8 @@ void add_pending_io(struct trace *trace, struct graph_line_data *gld)
 		return;
 	}
 	if (action == __BLK_TA_REQUEUE) {
-		if (ios_in_flight > 0)
-			ios_in_flight--;
+		if (trace->ios_in_flight > 0)
+			trace->ios_in_flight--;
 		return;
 	}
 	if (action != __BLK_TA_ISSUE)
@@ -1054,10 +1053,10 @@ void add_pending_io(struct trace *trace, struct graph_line_data *gld)
 	}
 
 account_io:
-	ios_in_flight++;
+	trace->ios_in_flight++;
 
 	seconds = SECONDS(io->time);
-	gld->data[seconds].sum += ios_in_flight;
+	gld->data[seconds].sum += trace->ios_in_flight;
 	gld->data[seconds].count++;
 
 	avg = (double)gld->data[seconds].sum / gld->data[seconds].count;
@@ -1088,8 +1087,8 @@ void add_completed_io(struct trace *trace,
 	if (!pio)
 		return;
 
-	if (ios_in_flight > 0)
-		ios_in_flight--;
+	if (trace->ios_in_flight > 0)
+		trace->ios_in_flight--;
 	if (io->time >= pio->dispatch_time) {
 		latency = io->time - pio->dispatch_time;
 		latency_gld->data[seconds].sum += latency;
