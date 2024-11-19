@@ -377,7 +377,12 @@ of the more arcane command line options:
     \item You can specify a run-time duration for blktrace via the
     \emph{-w} option -- then blktrace will run for the specified number
     of seconds, and then halt.
-  \end{enumerate}
+
+    \item You can specify a record entry duration for blktrace via the
+    \emph{-e} option -- then blktrace will run until the specified
+    number of records are captured for any of the block devices, and
+    then halt.
+\end{enumerate}
 \end{itemize}
 
 \subsection{\label{sec:blktrace-args}Command line arguments}

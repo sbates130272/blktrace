@@ -6,7 +6,7 @@ blktrace \- generate traces of the i/o traffic on block devices
 
 
 .SH SYNOPSIS
-.B blktrace \-d \fIdev\fR [ \-r \fIdebugfs_path\fR ] [ \-o \fIoutput\fR ] [ \-w \fItime\fR ] [ \-a \fIaction\fR ] [ \-A \fIaction_mask\fR ] [ \-v ]
+.B blktrace \-d \fIdev\fR [ \-r \fIdebugfs_path\fR ] [ \-o \fIoutput\fR ] [ \-w \fItime\fR ] [ \-e \fIevents\fR ] [ \-a \fIaction\fR ] [ \-A \fIaction_mask\fR ] [ \-v ]
 .br
 
 
@@ -69,7 +69,11 @@ The default behaviour for blktrace is to run forever until explicitly
 killed by the user (via a control-C, or sending SIGINT signal to the
 process via invocation the kill (1) utility). Also you can specify a
 run-time duration for blktrace via the \fB\-w\fR option -- then
-blktrace will run for the specified number of seconds, and then halt.
+blktrace will run for the specified number of seconds, and then
+halt. Or you can specify a number of records to capture via the
+\fB-e\fR option. Note that this will cause blktrace to stop when the
+first block device reaches this. The \fB-w\fR and \fB-e\fR options can
+be combined with the first one to be reached taking prescident.
 
 
 .SH OPTIONS
@@ -189,6 +193,13 @@ Outputs version
 \-\-stopwatch=\fIseconds\fR  
 .RS
 Sets run time to the number of seconds specified  
+.RE
+
+\-e \fIevents\fR
+.br
+\-\-events=\fIevents\fR
+.RS
+Sets run to stop when the specifed number of events are captured for any one block device
 .RE
 
 

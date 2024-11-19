@@ -282,6 +282,8 @@ static int pagesize;
 static int act_mask = ~0U;
 static int kill_running_trace;
 static int stop_watch;
+static unsigned long long  events;
+static volatile int events_done;
 static int piped_output;
 
 static char *debugfs_path = "/sys/kernel/debug";
@@ -329,7 +331,7 @@ static int *cl_fds;
 static int (*handle_pfds)(struct tracer *, int, int);
 static int (*handle_list)(struct tracer_devpath_head *, struct list_head *);
 
-#define S_OPTS	"d:a:A:r:o:kw:vVb:n:D:lh:p:sI:"
+#define S_OPTS	"d:a:A:e:r:o:kw:vVb:n:D:lh:p:sI:"
 static struct option l_opts[] = {
 	{
 		.name = "dev",
@@ -354,6 +356,12 @@ static struct option l_opts[] = {
 		.has_arg = required_argument,
 		.flag = NULL,
 		.val = 'A'
+	},
+	{
+		.name = "events",
+		.has_arg = required_argument,
+		.flag = NULL,
+		.val = 'e'
 	},
 	{
 		.name = "relay",
@@ -444,6 +452,7 @@ static char usage_str[] = "\n\n" \
         "[ -o <file>          | --output=<file>]\n" \
         "[ -D <dir>           | --output-dir=<dir>\n" \
         "[ -w <time>          | --stopwatch=<time>]\n" \
+        "[ -e <events>        | --events=<number>]\n" \
         "[ -a <action field>  | --act-mask=<action field>]\n" \
         "[ -A <action mask>   | --set-mask=<action mask>]\n" \
         "[ -b <size>          | --buffer-size]\n" \
@@ -461,6 +470,7 @@ static char usage_str[] = "\n\n" \
 	"\t-o File(s) to send output to\n" \
 	"\t-D Directory to prepend to output file names\n" \
 	"\t-w Stop after defined time, in seconds\n" \
+	"\t-e Stop after defined number of trace events\n" \
 	"\t-a Only trace specified actions. See documentation\n" \
 	"\t-A Give trace mask as a single value. See documentation\n" \
 	"\t-b Sub buffer size in KiB (default 512)\n" \
@@ -1862,6 +1872,34 @@ static void *thread_main(void *arg)
 		else if (ndone < 0 && errno != EINTR)
 			fprintf(stderr, "Thread %d poll failed: %d/%s\n",
 				tp->cpu, errno, strerror(errno));
+
+		if (ndone && events) {
+			struct list_head *p;
+			unsigned long long nevents;
+
+			__list_for_each(p, &devpaths) {
+				int cpu;
+				struct pdc_stats *sp;
+				struct devpath *dpp = list_entry(p, struct devpath, head);
+				nevents = 0;
+
+				for (cpu = 0, sp = dpp->stats; cpu < dpp->ncpus; cpu++, sp++) {
+					/*
+					 * Estimate events if not known...
+					 */
+					if (sp->nevents == 0) {
+						nevents += sp->data_read /
+							sizeof(struct blk_io_trace);
+					} else
+						nevents += sp->nevents;
+
+				}
+				if (events && (nevents >= events))
+					events_done = 1;
+			}
+			if (events_done)
+				tp->is_done = 1;
+		}
 	}
 
 	/*
@@ -2155,6 +2193,15 @@ static int handle_args(int argc, char *argv[])
 			break;
 		}
 
+		case 'e':
+			events = strtoull(optarg, NULL, 10);
+			if (events == 0) {
+				fprintf(stderr,
+					"Invalid events value (%llu)\n",
+					events);
+				return 1;
+			}
+			break;
 		case 'r':
 			debugfs_path = optarg;
 			break;
